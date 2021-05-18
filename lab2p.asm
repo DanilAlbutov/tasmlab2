@@ -156,8 +156,13 @@ cyclePushAdress:
 	mov ax, weight
 	mul cx
 	add si, ax ;в SI = weight * cx (i)
-	add si, 3030h
-	push si
+	;add si, 3030h
+	xor ax,ax
+	mov ax,si
+	;add al, '0'
+	;add ah, '0'
+	
+	push ax
 	
 	cmp cx,iter ;if (i = 0)
 	je exitFromcyclePushAdress ; если (i = 0) , то выйти из цикла
@@ -186,25 +191,26 @@ cyclePopAdress:
 	je exitFromcyclePopAdress ; если (i = 0) , то выйти из цикла
 	
 	
-	inc cx ; i++	
+	dec cx ; i--	
 	jmp cyclePopAdress
 	
 exitFromcyclePopAdress:	
 
 mov cx,0
 finalPrint:
+	;обнуление
 	xor si,si
 	xor di,di
 	xor ax,ax
 	xor dx,dx
 	;индексация массива адресов
-	mov si,offset adress + 2
-	xor ax,ax
+	mov si,offset adress + 2 ; ссылка на первый символ массива адресов
+	xor ax,ax 
 	mov ax, weight
 	mul cx
 	add si, ax ;в SI = weight * cx (i)
 	
-	
+	;умножение слова
 	
 	xor dx,dx
 	xor ax,ax
