@@ -5,6 +5,7 @@
 zap1 db 'Input strings:', '$'
 N db 'N1 N2 N3: ', '$'
 res db 1000 dup ("$")
+adress db 1000 dup ("$")
 weight dw 100
 
 i dw 0
@@ -44,20 +45,16 @@ str_res1:
 	mov dl,byte ptr [bx + 2] ;в DL первый символ  строки
 	
 	cmp dl, "-" ;если встретиться символ "-" то остановить считывание
-	je cycle_1_start
+	je next1
 	add bx, weight ; добавление длины к смещению (i++)
 	cmp cx,0 ;если каунтер 0 то остановить считывание
-	je cycle_1_start
+	je next1
 	add iter, 1 ;счетчик слов
 	sub cx, 1 ; уменьшить каунтер на 1
 	jmp str_res1 ;продолжить цикл (в начало цикла)
 	
-cycle_1_start:
-	mov si, offset res + 2 ;ссылка на первый элемент в SI
-	mov ax, weight ;в AX длина одного элемента массива
-	mul i ; в AX = AX(weight) * i 
-	add si, ax ;в SI weight * i
-	xor cx,cx
+next1:
+	
 	
 xor ax,ax
 
@@ -77,7 +74,7 @@ cycleMoveWords:
 	je exitFromMoveWords ; если (i = 0) , то выйти из цикла
 	
 	push si
-	
+	;mov byte ptr [si + 5], '0'
 	inc cx ; i++
 	jne addingNullByteToEndWord	 ; если (i != 0) то добавить нулевой байт в конец
 	
@@ -97,7 +94,8 @@ addingNullByteToEndWord:
 	cmp dl, "$"
 	
 	jne skip1 ;if !=
-	mov byte ptr [si], 0	
+	
+	mov byte ptr [si - 1], '0'	
 	jmp cycleMoveWords
 	
 	skip1:
@@ -108,6 +106,10 @@ addingNullByteToEndWord:
 exitFromMoveWords:
 
 mov cx,0
+
+mov dx,0ah
+	mov ah,02h
+	int 21h
 
 printWords:
 	xor si,si
