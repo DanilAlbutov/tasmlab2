@@ -107,7 +107,7 @@ exitFromMoveWords:
 
 mov cx,0
 
-mov dx,0ah
+	mov dx,0ah
 	mov ah,02h
 	int 21h
 
