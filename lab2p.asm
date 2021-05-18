@@ -7,7 +7,7 @@ N db 'N1 N2 N3: ', '$'
 res db 1000 dup ("$")
 adress db 1000 dup ("$")
 weight dw 100
-
+letters db  '0123456789ABCDEF$' ;Числа в 16-ричной системе
 i dw 0
 iter dw 0
 numbers db 25 dup ("$")
@@ -210,14 +210,57 @@ finalPrint:
 	mul cx
 	add si, ax ;в SI = weight * cx (i)
 	
-	;умножение слова
+	
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	mov dl, byte ptr [si]
+	mov dh, byte ptr [si + 1]
+	;shr dx, 8
+	xor ax,ax
+    mov al,dl
+    push    ax
+    shr al,4    ; выделить старшие четыре бита
+    xor bx,bx
+    mov bl,al
+    mov al,letters[bx]
+    int 29h ; вывести на экран
+ 
+    pop ax
+    and al,0Fh  ; выделить младшие четыре бита
+    xor bx,bx
+    mov bl,al
+    mov al,letters[bx]
+    int 29h ; вывести на экран
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	xor ax,ax
+    mov al,dh
+    push    ax
+    shr al,4    ; выделить старшие четыре бита
+    xor bx,bx
+    mov bl,al
+    mov al,letters[bx]
+    int 29h ; вывести на экран
+ 
+    pop ax
+    and al,0Fh  ; выделить младшие четыре бита
+    xor bx,bx
+    mov bl,al
+    mov al,letters[bx]
+    int 29h ; вывести на экран
+	
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	
+	
+	
+	
 	
 	xor dx,dx
 	xor ax,ax
 	;вывод адреса
-	mov dx, si
-	mov ah,09h
-	int 21h
+	;mov dx, si
+	;mov ah,09h
+	;int 21h
 	
 	xor dx,dx
 	xor ax,ax
