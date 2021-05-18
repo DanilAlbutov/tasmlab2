@@ -91,12 +91,13 @@ addingNullByteToEndWord:
 	
 	pop si
 	inc si
+	;dec si
 	push si
 	mov dl,byte ptr [si]
 	cmp dl, "$"
 	
 	jne skip1 ;if !=
-	mov byte ptr [si], "0"	
+	mov byte ptr [si], 0	
 	jmp cycleMoveWords
 	
 	skip1:
@@ -120,8 +121,10 @@ printWords:
 	add si, ax ;в SI = weight * cx (i)
 	
 	xor ax,ax
+	xor dx,dx
 	
-	mov dx, offset res
+	;mov dl, byte ptr [si]
+	mov dx, si
 	mov ah,09h
 	int 21h
 	
