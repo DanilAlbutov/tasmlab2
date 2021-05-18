@@ -138,12 +138,119 @@ printWords:
 	int 21h
 	
 	cmp cx,iter ;if (i = 0)
-	je exit
+	je exitFromPrint
 	
 	inc cx ; i++
 	jmp printWords
 	
+exitFromPrint:
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;бааааги снизу
+
+	mov cx, 0
+cyclePushAdress:	
+	xor si,si
+	mov si,offset res + 2
+	xor ax,ax
+	mov ax, weight
+	mul cx
+	add si, ax ;в SI = weight * cx (i)
+	add si, 3030h
+	push si
+	
+	cmp cx,iter ;if (i = 0)
+	je exitFromcyclePushAdress ; если (i = 0) , то выйти из цикла
+	
+	
+	inc cx ; i++	
+	jmp cyclePushAdress
+	
+exitFromcyclePushAdress:
+	
+	mov cx, iter
+cyclePopAdress:	
+	xor si,si
+	mov si,offset adress + 2
+	xor ax,ax
+	mov ax, weight
+	mul cx
+	add si, ax ;в SI = weight * cx (i)
+	
+	pop dx 
+	
+	;mov byte ptr [si], dl
+	mov word ptr [si], dx
+	
+	cmp cx,0 ;if (i = 0)
+	je exitFromcyclePopAdress ; если (i = 0) , то выйти из цикла
+	
+	
+	inc cx ; i++	
+	jmp cyclePopAdress
+	
+exitFromcyclePopAdress:	
+
+mov cx,0
+finalPrint:
+	xor si,si
+	xor di,di
+	xor ax,ax
+	xor dx,dx
+	;индексация массива адресов
+	mov si,offset adress + 2
+	xor ax,ax
+	mov ax, weight
+	mul cx
+	add si, ax ;в SI = weight * cx (i)
+	
+	
+	
+	xor dx,dx
+	xor ax,ax
+	;вывод адреса
+	mov dx, si
+	mov ah,09h
+	int 21h
+	
+	xor dx,dx
+	xor ax,ax
+	;вывод двоеточия
+	mov ah, 02h
+	mov dl, 3Ah
+	int 21h
+	
+	xor dx,dx
+	xor ax,ax
+	;индексация массива строк
+	mov si,offset res + 2
+	xor ax,ax
+	mov ax, weight
+	mul cx	
+	add si, ax ;в DI = weight * cx (i)
+	
+	;вывод строки
+	mov dx, si
+	mov ah,09h
+	int 21h
+	
+	xor dx,dx
+	xor ax,ax
+	;вывод переноса строки
+	mov dx,0ah
+	mov ah,02h
+	int 21h	
+	
+	
+	
+	
+	
+	cmp cx, iter
+	je exit
+	inc cx
+	
+	jmp finalPrint
+		
 exit:
 	mov ah,4ch
 	int 21h
