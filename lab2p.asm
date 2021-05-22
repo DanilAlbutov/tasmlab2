@@ -3,7 +3,6 @@
 .386
 .data
 zap1 db 'Input strings:', '$'
-
 res db 1000 dup ("$")
 adress db 1000 dup ("$")
 weight dw 100
@@ -38,9 +37,7 @@ str_res1:
 	mov dx, bx
 	mov ah,0ah
 	int 21h
-	;адрес в текст
-	;длина адресса
-	;бегать построчно
+	
 	mov dl,byte ptr [bx + 2] ;в DL первый символ  строки
 	
 	cmp dl, "-" ;если встретиться символ "-" то остановить считывание
@@ -212,8 +209,9 @@ finalPrint:
 	
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
-	mov dl, byte ptr [si]
-	mov dh, byte ptr [si + 1]
+	mov dl, byte ptr [si + 1]
+	mov dh, byte ptr [si]
+	add dx, offset res + 2 ;добавление смещения
 	;shr dx, 8
 	xor ax,ax
     mov al,dl
@@ -297,6 +295,3 @@ exit:
 	int 21h
 end
 
-; необходима функция , которая будет посимвольно 
-	; пробегать по элементу массива и добавит 0 в конец 
-	; элемента. arr[сслка на элемент + 1]
