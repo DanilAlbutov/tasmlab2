@@ -3,14 +3,13 @@
 .386
 .data
 zap1 db 'Input strings:', '$'
-N db 'N1 N2 N3: ', '$'
+
 res db 1000 dup ("$")
 adress db 1000 dup ("$")
 weight dw 100
 letters db  '0123456789ABCDEF$' ;Числа в 16-ричной системе
 i dw 0
 iter dw 0
-numbers db 25 dup ("$")
 .code
 start:
 	MOV	AX,	@DATA
@@ -250,13 +249,6 @@ finalPrint:
 	
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
-	
-	
-	
-	
-	
-	xor dx,dx
-	xor ax,ax
 	;вывод адреса
 	;mov dx, si
 	;mov ah,09h
