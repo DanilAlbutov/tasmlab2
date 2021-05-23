@@ -12,7 +12,7 @@ number ends
 zapros1 db "Vvedite do 20 chisel:","$"
 zapros2 db "Vvedite I:","$"
 zapros3 db "Vvedite J:","$"
-primer db "Primer: (A[I] + 2) * (A[J] - 1)", "$"
+primer db "Primer: (A[I] + A[J] * A[J + 1])", "$"
 error_r db "Previshenie maximalnogo znachenia","$"
 error_i db "Nepravilnii index","$"
 mass_numbers number 20 dup (<>)
@@ -188,7 +188,7 @@ podschet:
 	mov ax, j 
 	cmp ax, iter
 	;ja error_indx ; вывести ошибку если J > num.count
-	
+	;;start copy
 	mov ax,type number ;получение размера одной структуры в AX
 	mov di,offset mass_numbers ; ссылка на первый элемент массива структур
 	mov bx, i ;в BX I
@@ -196,10 +196,7 @@ podschet:
 	add di,ax ;в DI индекс текущего элемента массива структур (индекс массива)
 	mov iter,0
 	
-	;вывод знака числа
-	;mov dl, [di].znak 
-	;mov ah,02h
-	;int 21h
+	
 to_int_poryadok_1:
 	
 	cmp [di].celaya, "$" ;если в целой части встретиться $ 
@@ -253,7 +250,8 @@ to_int_mantissa_1:
 	;теперь в res_poryadok1 = целая часть 1 числа
 	;в res_mantissa1 = дробная часть 1 числа
 plus_two_start:
-	push iter ; сохраняем длину чдробной части
+;;start copy
+	push iter ; сохраняем длину дробной части
 	sub di,iter ;получаем адрес целой части 2ого числа
 	;переход на след строку
 	mov dx, 0ah
@@ -301,7 +299,7 @@ to_int_mantissa_start_2:
 to_int_mantissa_2:
 	
 	cmp [di].drobnaya, 0Dh ;если конец строки
-	je start_op1mul 
+	je start_get3elem 
 	mov dl, [di].drobnaya
 	mov ah, 02h
 	int 21h
@@ -315,10 +313,88 @@ to_int_mantissa_2:
 	add iter,1
 	jmp to_int_mantissa_2
 	
-start_op1mul:
+start_get3elem:
 	push iter
 	sub di,iter
-	;перевод на след строку
+	;;;;;;;;;;;;;;;;;;;;;;;
+	mov dx, 0ah
+	mov ah, 02h
+	int 21h
+	
+to_int_poryadok_3_start:
+	mov ax,type number ;получение размера одной структуры
+	mov di,offset mass_numbers ;получение ссылки на первы элемнт массива чисел
+	add j, 1
+	mov bx, j ;;;;;;;;;;;;;;;;----------------;;;;;;;;;;
+	mul bx
+	add di,ax ;в DI индекс первого элемента массива чисел
+	mov iter,0
+	
+	
+to_int_poryadok_3:
+	cmp [di].celaya, "$" ; если символ равен $
+	je to_int_mantissa_start_3 ; обработка дробной части
+	;вывод цифры
+	mov dl, [di].celaya ;в dl ссылка на первую цифру целой части
+	mov ah, 02h
+	int 21h
+	
+	mov bl,[di].celaya ;в BL символ первой цифры целой части
+	; получение значения целой части
+	sub bl,"0" ; char to int
+	mov ax,10
+	mul res_poryadok3
+	add al, bl
+	mov res_poryadok3,ax
+	inc di
+	add iter,1
+	jmp to_int_poryadok_3
+	
+to_int_mantissa_start_3:
+	
+	xor eax,eax
+	;push iter
+	sub di,iter ; переходим к дробной части
+	mov iter, 0
+	;вывод точки
+	mov dl,"."
+	mov ah,02h
+	int 21h
+to_int_mantissa_3:
+	
+	cmp [di].drobnaya, 0Dh ;если конец строки
+	je start_op1_mul 
+	mov dl, [di].drobnaya
+	mov ah, 02h
+	int 21h
+	mov bl,[di].drobnaya
+	sub bl,"0"
+	mov ax,10
+	mul res_mantissa3
+	add al, bl
+	mov res_mantissa3,ax
+	inc di
+	add iter,1
+	jmp to_int_mantissa_3	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	
+	start_op1_mul:
+
+	push iter
+	sub di,iter
+	
 	mov dx, 0ah
 	mov ah,02h
 	int 21h
@@ -338,8 +414,16 @@ start_op1mul:
 	mov ax, res_poryadok1
 	mov dx, res_poryadok2
 	add ax,dx
+	jmp finalPrint
+	
+	;{
+	;sum.txt
+	
+	;}
 	
 	
+	finalPrint:
+	;Вывод результата (Число должно быть в AX)
 	
 	mov     bx,     10              ;делитель (основание системы счисления)
 	mov     cx,     0               ;количество выводимых цифр
@@ -379,27 +463,13 @@ start_op1mul:
         loop    show1                  ;и так поступаем столько раз, сколько нашли цифр в числе (cx)
 	
 	
-	jmp vivod_start
-
-
-
-
-
-vivod_start:
-	mov eax,res_poryadok
-	mov di,iter
-vivod_poryadok:
-	;call OutInt
 	jmp exit
-error_reg:
-	mov dx, offset error_r
-	mov ah,09h
-	int 21h
-	jmp exit
-error_indx:
-	mov dx, offset error_i
-	mov ah,09h
-	int 21h
+
+
+
+
+
+
 exit:
 	mov ah,4ch
 	int 21h
