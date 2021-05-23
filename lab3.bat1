@@ -1,0 +1,15 @@
+goto test
+:errasm1
+	edit lab3.asm
+	goto end
+:errasm2
+	edit lab3l.asm
+	goto end
+:test
+	tasm /zi /l lab3.asm
+	if errorlevel 1 goto errasm1
+	tasm /zi /l lab3l.asm
+	if errorlevel 1 goto errasm2
+	tlink /v /m lab3.obj + lab3l.obj
+:end
+	pause
