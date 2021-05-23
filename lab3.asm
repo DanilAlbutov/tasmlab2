@@ -13,7 +13,7 @@ zapros1 db "Vvedite do 20 chisel:","$"
 zapros2 db "Vvedite I:","$"
 zapros3 db "Vvedite J:","$"
 primer db "Primer: (A[I] + A[J] * A[J + 1])", "$"
-error_r db "Previshenie maximalnogo znachenia","$"
+result db "Result: ","$"
 error_i db "Nepravilnii index","$"
 mass_numbers number 20 dup (<>)
 temp db 20 dup ("$")
@@ -380,13 +380,6 @@ to_int_mantissa_3:
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
 	
@@ -398,32 +391,51 @@ to_int_mantissa_3:
 	mov dx, 0ah
 	mov ah,02h
 	int 21h
-	
-	xor ax,ax
-	xor dx,dx	
-	
-	mov ax,res_mantissa1
-	mov dx, res_mantissa2
-	add ax,dx
-	
-	push ax
-	
-	xor ax,ax
-	xor dx,dx
-	
-	mov ax, res_poryadok1
-	mov dx, res_poryadok2
-	add ax,dx
-	jmp finalPrint
-	
 	;{
 	;sum.txt
 	
 	;}
+	;MOV AX, 150    ; Первый множитель в регистр AX
+	;MOV BX, 250    ; Второй множитель в регистр BX
+	;MUL BX         ; Теперь АХ = 150 * 250 = 37500
+	
+	;A[J] * A[J +1] - целое
+	mov ax,res_poryadok2
+	mov bx,res_poryadok3
+	mul bx
+	; A[I] + A[J] * A[J +1] - целое
+	mov bx,res_poryadok1
+	add ax,bx
+	push ax
+	
+	;A[J] * A[J +1] - дробная
+	mov ax,res_mantissa2
+	mov bx,res_mantissa3
+	mul bx
+	;A[I] + A[J] * A[J +1] - дробная
+	mov bx,res_mantissa1
+	add ax,bx
+	
+	pop bx
+	
+	push ax
+	
+	mov ax, bx
+	
+	push ax
+	
+	jmp finalPrint
+	
 	
 	
 	finalPrint:
 	;Вывод результата (Число должно быть в AX)
+	
+	mov dx, offset result
+	mov ah,09h
+	int 21h
+	
+	pop ax 
 	
 	mov     bx,     10              ;делитель (основание системы счисления)
 	mov     cx,     0               ;количество выводимых цифр
