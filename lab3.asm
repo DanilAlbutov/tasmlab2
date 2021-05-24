@@ -5,7 +5,7 @@
 ;шаблон структуры
 number struc
 celaya db 15 dup ("$")
-drobnaya db 3 dup ("$")
+drobnaya db 4 dup ("$")
 number ends
 
 .data
@@ -437,6 +437,9 @@ to_int_mantissa_3:
 	mov dx, 0
 	mov ax, mulDrob1
 	mul bx ;ax = muldrob * 10
+	;;
+	mov mulDrob1, ax
+	;;
 	pop ax
 	add mulDrob1, ax	;добавляем остаток из стека
 	loop popFromStackDrob1Cycle
@@ -465,6 +468,9 @@ to_int_mantissa_3:
 	mov dx, 0
 	mov ax, mulCel2
 	mul bx ;ax = mulCel2 * 10
+	;
+	mov mulCel2, ax
+	;
 	pop ax
 	add mulCel2, ax	;	
 	
@@ -495,6 +501,9 @@ to_int_mantissa_3:
 	mov dx, 0
 	mov ax, mulDrob2
 	mul bx ;ax = muldrob2 * 10
+	;
+	mov mulDrob2, ax
+	;
 	pop ax
 	add mulDrob2, ax	;добавляем остаток из стека
 	loop popFromStackDrob2Cycle
@@ -526,6 +535,9 @@ to_int_mantissa_3:
 	mov dx, 0
 	mov ax, mulCel3
 	mul bx ;ax = mulCel2 * 10
+	;
+	mov mulCel3, ax
+	;
 	pop ax
 	add mulCel3, ax	;	
 	
@@ -558,6 +570,9 @@ to_int_mantissa_3:
 	mov dx, 0
 	mov ax, mulDrob3
 	mul bx ;ax = muldrob * 10
+	;
+	mov mulDrob3, ax
+	;
 	pop ax
 	add mulDrob3, ax	;добавляем остаток из стека
 	loop popFromStackDrob3Cycle
@@ -601,6 +616,9 @@ to_int_mantissa_3:
 	mov dx, 0
 	mov ax, mulDrob4
 	mul bx ;ax = muldrob * 10
+	;
+	mov mulDrob4, ax
+	;
 	pop ax
 	add mulDrob4, ax	;добавляем остаток из стека
 	loop popFromStackDrob4Cycle
@@ -627,6 +645,9 @@ to_int_mantissa_3:
 	mov dx, 0
 	mov ax, mulCel4
 	mul bx ;ax = mulCel2 * 10
+	;
+	mov mulCel4, ax
+	;
 	pop ax
 	add mulCel4, ax	;	
 	
