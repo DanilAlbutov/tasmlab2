@@ -9,18 +9,16 @@ drobnaya db 3 dup ("$")
 number ends
 
 .data
-zapros1 db "Vvedite do 20 chisel:","$"
+zapros1 db "Vvedite do 100 chisel:","$"
 zapros2 db "Vvedite I:","$"
 zapros3 db "Vvedite J:","$"
-primer db "Primer: (A[I] + A[J] * A[J + 1])", "$"
+primer db "Zadanie: (A[I] + A[J] * A[J + 1])", "$"
 result db "Result: ","$"
-error_i db "Nepravilnii index","$"
-mass_numbers number 20 dup (<>)
+mass_numbers number 100 dup (<>)
 temp db 20 dup ("$")
 iter dw 0
 i dw 0
 j dw 0
-k dw 0
 res_poryadok1 dw 0
 res_mantissa1 dw 0
 res_poryadok2 dw 0
@@ -29,9 +27,6 @@ res_poryadok3 dw 0
 res_mantissa3 dw 0
 res_poryadok dd 0
 res_mantissa dw 0
-res_znak dw 0
-flag_znak1 dw 0
-flag_znak2 dw 0
 .code
 start:
 	MOV	AX,	@DATA
@@ -325,7 +320,7 @@ to_int_poryadok_3_start:
 	mov ax,type number ;получение размера одной структуры
 	mov di,offset mass_numbers ;получение ссылки на первы элемнт массива чисел
 	add j, 1
-	mov bx, j ;;;;;;;;;;;;;;;;----------------;;;;;;;;;;
+	mov bx, j 
 	mul bx
 	add di,ax ;в DI индекс первого элемента массива чисел
 	mov iter,0
