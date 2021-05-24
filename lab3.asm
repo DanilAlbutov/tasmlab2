@@ -26,16 +26,18 @@ res_poryadok2 dw 0
 res_mantissa2 dw 0
 res_poryadok3 dw 0
 res_mantissa3 dw 0
-res_poryadok dd 0
+res_poryadok dw 0
 res_mantissa dw 0
 mulCel1 dw 0
 mulCel2 dw 0
 mulCel3 dw 0
 mulCel4 dw 0
+mulCel5 dw 0
 mulDrob1 dw 0
 mulDrob2 dw 0
 mulDrob3 dw 0
 mulDrob4 dw 0
+mulDrob5 dw 0
 mulVarRes dw 0
 tempVar dw 0
 .code
@@ -628,6 +630,8 @@ to_int_mantissa_3:
 	
 	mov ax, tempVar ;отсаток от числа в ax
 	
+	mov k, 0
+	
 	cmp ax, 0
 	je skipPushCel4Cycle
 	
@@ -668,10 +672,103 @@ to_int_mantissa_3:
 	
 	mov res_mantissa3, ax
 	
-	mov ax, res_mantissa3
+	mov ax, res_mantissa3 ;  в res_mantissa3 дробная часть результата умножения
 	push ax
-	mov ax, res_poryadok3
+	mov ax, res_poryadok3 ; в res_poryadok3 дробная часть результата умножения
 	push ax
+	
+	xor ax,ax
+	mov ax,res_poryadok1
+	add ax,res_poryadok3 ; в ax сумма целой части
+	mov res_poryadok, ax
+	
+	xor ax,ax
+	mov ax,res_mantissa1
+	add ax,res_mantissa3 ; в ax сумма целой части
+	
+	mov res_mantissa, ax
+	
+	mov ax, res_mantissa
+	
+	;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	mov bx, 10
+	mov cx,3
+	;цикл выполняеться 3 раза
+	pushDrob5Cycle:
+	mov dx, 0
+	div bx ;результат деления в ax, остаток в dx
+	push dx ;сохраняем остаток в стек
+	loop pushDrob5Cycle
+	mov tempVar, ax  ;сохраняем оставшееся число
+	
+	
+	
+	mov cx, 3
+	popFromStackDrob5Cycle:
+	mov dx, 0
+	mov ax, mulDrob5
+	mul bx ;ax = muldrob * 10
+	;
+	mov mulDrob5, ax
+	;
+	pop ax
+	add mulDrob5, ax	;добавляем остаток из стека
+	loop popFromStackDrob5Cycle
+	;дробное1 заполнено; осталось целое2
+	
+	mov ax, tempVar ;отсаток от числа в ax
+	
+	mov k, 0
+	
+	cmp ax, 0
+	je skipPushCel5Cycle
+	
+	
+	pushCel5Cycle:
+	cmp ax, 0
+	je exitFrompushCel5Cycle
+	
+	mov dx, 0
+	div bx ;результат деления в ax, остаток в dx
+	push dx ;сохраняем остаток в стек
+	inc k
+	jmp pushCel5Cycle
+	
+	exitFrompushCel5Cycle:
+	
+	mov cx, k
+	
+	popFromStackCel5Cycle:
+	
+	mov dx, 0
+	mov ax, mulCel5
+	mul bx ;ax = mulCel2 * 10
+	;
+	mov mulCel5, ax
+	;
+	pop ax
+	add mulCel5, ax	;	
+	
+	loop popFromStackCel5Cycle
+	
+	skipPushCel5Cycle:
+	;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	mov ax, mulCel5
+	add res_poryadok, ax
+	
+	mov ax,mulDrob5 ; в mulDrob4 дробная часть результата сложения
+	
+	mov res_mantissa, ax
+	
+	mov ax, res_mantissa
+	push ax
+	mov ax, res_poryadok
+	push ax
+	
+	
+	
 	
 	jmp finalPrint
 	
