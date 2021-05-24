@@ -19,6 +19,7 @@ temp db 20 dup ("$")
 iter dw 0
 i dw 0
 j dw 0
+k dw 0
 res_poryadok1 dw 0
 res_mantissa1 dw 0
 res_poryadok2 dw 0
@@ -27,6 +28,16 @@ res_poryadok3 dw 0
 res_mantissa3 dw 0
 res_poryadok dd 0
 res_mantissa dw 0
+mulCel1 dw 0
+mulCel2 dw 0
+mulCel3 dw 0
+mulCel4 dw 0
+mulDrob1 dw 0
+mulDrob2 dw 0
+mulDrob3 dw 0
+mulDrob4 dw 0
+mulVarRes dw 0
+tempVar dw 0
 .code
 start:
 	MOV	AX,	@DATA
@@ -386,37 +397,251 @@ to_int_mantissa_3:
 	mov dx, 0ah
 	mov ah,02h
 	int 21h
-	;{
-	;sum.txt
 	
-	;}
 	;MOV AX, 150    ; Первый множитель в регистр AX
 	;MOV BX, 250    ; Второй множитель в регистр BX
 	;MUL BX         ; Теперь АХ = 150 * 250 = 37500
 	
-	;A[J] * A[J +1] - целое
-	mov ax,res_poryadok2
-	mov bx,res_poryadok3
+	;в переменных числа
+	;A[I] + A[J] * A[J + 1]
+	
+	calculate_Cel1Cel2:
+	;Этап цел1\цел2
+	mov ax, res_poryadok2
+	mov bx, res_poryadok3
+	mul bx ;в ax = cel1 * cel2
+	mov mulCel1, ax ;в стеке cel1 * cel2
+	;целое1 заполнено
+	xor ax,ax
+	xor bx,bx
+	
+	
+	;Этап цел1\дроб2
+	mov ax, res_poryadok2
+	mov bx, res_mantissa3
 	mul bx
-	; A[I] + A[J] * A[J +1] - целое
-	mov bx,res_poryadok1
-	add ax,bx
-	push ax
+	; в ax cel1 * drob2
+	 ;старший байт слово делимого
+	mov bx, 10
+	mov cx,3
+	;цикл выполняеться 3 раза
+	pushDrob1Cycle:
+	mov dx, 0
+	div bx ;результат деления в ax, остаток в dx
+	push dx ;сохраняем остаток в стек
+	loop pushDrob1Cycle
+	mov tempVar, ax  ;сохраняем оставшееся число
 	
-	;A[J] * A[J +1] - дробная
-	mov ax,res_mantissa2
-	mov bx,res_mantissa3
+	mov cx, 3
+	popFromStackDrob1Cycle:
+	mov dx, 0
+	mov ax, mulDrob1
+	mul bx ;ax = muldrob * 10
+	pop ax
+	add mulDrob1, ax	;добавляем остаток из стека
+	loop popFromStackDrob1Cycle
+	;дробное1 заполнено; осталось целое2
+	
+	mov ax, tempVar ;отсаток от числа в ax
+	cmp ax, 0
+	je skipPushCel2Cycle ;если целой части в результате умножения 
+	                     ; не обнаружено то пропустить
+	pushCel2Cycle:
+	cmp ax, 0
+	je exitFrompushCel2Cycle
+	
+	mov dx, 0
+	div bx ;результат деления в ax, остаток в dx
+	push dx ;сохраняем остаток в стек
+	inc k
+	jmp pushCel2Cycle
+	
+	exitFrompushCel2Cycle:
+	
+	mov cx, k
+	
+	popFromStackCel2Cycle:
+	
+	mov dx, 0
+	mov ax, mulCel2
+	mul bx ;ax = mulCel2 * 10
+	pop ax
+	add mulCel2, ax	;	
+	
+	loop popFromStackCel2Cycle
+	
+	skipPushCel2Cycle:
+	;целое2 заполнено; осталось целое3 + дробное2 + дробное3
+	
+	;Этап цел2\дроб1
+	
+	mov ax, res_poryadok3
+	mov bx, res_mantissa2
 	mul bx
-	;A[I] + A[J] * A[J +1] - дробная
-	mov bx,res_mantissa1
-	add ax,bx
+	; в ax cel2 * drob1
+	 ;старший байт слово делимого
+	mov bx, 10
+	mov cx,3
+	;цикл выполняеться 3 раза
+	pushDrob2Cycle:
+	mov dx, 0
+	div bx ;результат деления в ax, остаток в dx
+	push dx ;сохраняем остаток в стек
+	loop pushDrob2Cycle
+	mov tempVar, ax  ;сохраняем оставшееся число
 	
-	pop bx
+	mov cx, 3
+	popFromStackDrob2Cycle:
+	mov dx, 0
+	mov ax, mulDrob2
+	mul bx ;ax = muldrob2 * 10
+	pop ax
+	add mulDrob2, ax	;добавляем остаток из стека
+	loop popFromStackDrob2Cycle
+	;дробное1 заполнено; осталось целое2
 	
+	mov ax, tempVar ;отсаток от числа в ax
+	
+	mov k, 0 ;обнуляем счетчик оставшихся цифр целого
+	
+	cmp ax, 0
+	je skipPushCel3Cycle
+	
+	pushCel3Cycle:
+	cmp ax, 0
+	je exitFrompushCel3Cycle
+	
+	mov dx, 0
+	div bx ;результат деления в ax, остаток в dx
+	push dx ;сохраняем остаток в стек
+	inc k
+	jmp pushCel3Cycle
+	
+	exitFrompushCel3Cycle:
+	
+	mov cx, k
+	
+	popFromStackCel3Cycle:
+	
+	mov dx, 0
+	mov ax, mulCel3
+	mul bx ;ax = mulCel2 * 10
+	pop ax
+	add mulCel3, ax	;	
+	
+	loop popFromStackCel3Cycle
+	
+	skipPushCel3Cycle:
+	;целое3 и дробное2 заполнено; осталось дробное 3
+
+	;этап дроб1\дроб2
+	
+	mov bx, res_mantissa2
+	mov ax, res_mantissa3
+	mul bx ;ax = drob1 * drob2
+	mov dx, 0
+	mov bx, 1000
+	div bx ;ax = drob1 * drob2 \ 1000
+	
+	mov bx,10
+	mov cx,3
+	
+	pushDrob3Cycle:
+	mov dx, 0
+	div bx ;результат деления в ax, остаток в dx
+	push dx ;сохраняем остаток в стек
+	loop pushDrob3Cycle
+	
+	
+	mov cx, 3
+	popFromStackDrob3Cycle:
+	mov dx, 0
+	mov ax, mulDrob3
+	mul bx ;ax = muldrob * 10
+	pop ax
+	add mulDrob3, ax	;добавляем остаток из стека
+	loop popFromStackDrob3Cycle
+	
+	;целое1 + целое2  + дробное1
+	;+ целое3 + дробное2 + дробное3 заполнено
+	;этап сложения 
+	
+	mov res_mantissa3, 0
+	mov res_poryadok3 , 0
+	
+	mov ax, mulCel1
+	add res_poryadok3, ax
+	mov ax, mulCel2
+	add res_poryadok3, ax
+	mov ax, mulCel3
+	add res_poryadok3, ax
+	;в res_poryadok3 целая часть результата умножения
+	
+	mov ax, mulDrob1
+	add res_mantissa3, ax
+	mov ax, mulDrob2
+	add res_mantissa3, ax
+	mov ax, mulDrob3
+	add res_mantissa3, ax
+	
+	mov ax, res_mantissa3
+	;;;;;;;;;;;;;;;;;;;;;
+	mov bx, 10
+	mov cx,3
+	;цикл выполняеться 3 раза
+	pushDrob4Cycle:
+	mov dx, 0
+	div bx ;результат деления в ax, остаток в dx
+	push dx ;сохраняем остаток в стек
+	loop pushDrob4Cycle
+	mov tempVar, ax  ;сохраняем оставшееся число
+	
+	mov cx, 3
+	popFromStackDrob4Cycle:
+	mov dx, 0
+	mov ax, mulDrob4
+	mul bx ;ax = muldrob * 10
+	pop ax
+	add mulDrob4, ax	;добавляем остаток из стека
+	loop popFromStackDrob4Cycle
+	;дробное1 заполнено; осталось целое2
+	
+	mov ax, tempVar ;отсаток от числа в ax
+	
+	pushCel4Cycle:
+	cmp ax, 0
+	je exitFrompushCel4Cycle
+	
+	mov dx, 0
+	div bx ;результат деления в ax, остаток в dx
+	push dx ;сохраняем остаток в стек
+	inc k
+	jmp pushCel4Cycle
+	
+	exitFrompushCel4Cycle:
+	
+	mov cx, k
+	
+	popFromStackCel4Cycle:
+	
+	mov dx, 0
+	mov ax, mulCel4
+	mul bx ;ax = mulCel2 * 10
+	pop ax
+	add mulCel4, ax	;	
+	
+	loop popFromStackCel4Cycle
+	
+	mov ax, mulCel4 ;в mulCel4 целая часть результата сложения
+	add res_poryadok3, ax ; добавляем к целой части
+	
+	mov ax,mulDrob4 ; в mulDrob4 дробная часть результата сложения
+	
+	mov res_mantissa3, ax
+	
+	mov ax, res_mantissa3
 	push ax
-	
-	mov ax, bx
-	
+	mov ax, res_poryadok3
 	push ax
 	
 	jmp finalPrint
@@ -470,6 +695,7 @@ to_int_mantissa_3:
         loop    show1                  ;и так поступаем столько раз, сколько нашли цифр в числе (cx)
 	
 	
+		
 	jmp exit
 
 
