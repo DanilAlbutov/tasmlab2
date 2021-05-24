@@ -611,6 +611,8 @@ to_int_mantissa_3:
 	loop pushDrob4Cycle
 	mov tempVar, ax  ;сохраняем оставшееся число
 	
+	
+	
 	mov cx, 3
 	popFromStackDrob4Cycle:
 	mov dx, 0
@@ -625,6 +627,10 @@ to_int_mantissa_3:
 	;дробное1 заполнено; осталось целое2
 	
 	mov ax, tempVar ;отсаток от числа в ax
+	
+	cmp ax, 0
+	je skipPushCel4Cycle
+	
 	
 	pushCel4Cycle:
 	cmp ax, 0
@@ -652,6 +658,8 @@ to_int_mantissa_3:
 	add mulCel4, ax	;	
 	
 	loop popFromStackCel4Cycle
+	
+	skipPushCel4Cycle:
 	
 	mov ax, mulCel4 ;в mulCel4 целая часть результата сложения
 	add res_poryadok3, ax ; добавляем к целой части
